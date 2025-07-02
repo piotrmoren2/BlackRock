@@ -1,0 +1,6 @@
+@BlackRock.Server_HostAddress = https://localhost:5000
+
+GET {{BlackRock.Server_HostAddress}}/investorsData/getSampleData
+Accept: application/json
+
+###
