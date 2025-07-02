@@ -5,21 +5,24 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using BlackRockTask.Server.Controllers;
 using BlackRockTask.Server.Models;
+using BlackRock.Server.Services;
+
+
+public class FileServiceMocked : FileService
+{
+    public override List<InvestorDataRow> ReadCSV()
+    {
+        throw new Exception("Simulated data error");
+    }
+}
 
 public class InvestorsDataControllerTests
-{
-    private class FailingInvestorsDataController : InvestorsDataController
-    {
-        public override List<InvestorDataRow> ReadCSV()
-        {
-            throw new Exception("Simulated data error");
-        }
-    }
+{   
 
     [Fact]
     public async Task GetSampleData_WhenExceptionThrown_ReturnsStatus500()
     {
-        var controller = new FailingInvestorsDataController();
+        var controller = new InvestorsDataController(new FileServiceMocked());
 
         var result = await controller.GetSampleData();
 
@@ -31,7 +34,7 @@ public class InvestorsDataControllerTests
     [Fact]
     public async Task GetDataByInvestor_WhenExceptionThrown_ReturnsStatus500()
     {
-        var controller = new FailingInvestorsDataController();
+        var controller = new InvestorsDataController(new FileServiceMocked());
 
         var result = await controller.GetDataByInvestor("any", "All");
 
@@ -43,7 +46,7 @@ public class InvestorsDataControllerTests
     [Fact]
     public async Task GetInvestorSummaries_WhenExceptionThrown_ReturnsStatus500()
     {
-        var controller = new FailingInvestorsDataController();
+        var controller = new InvestorsDataController(new FileServiceMocked());
 
         var result = await controller.GetInvestorSummaries("any");
 
@@ -52,7 +55,7 @@ public class InvestorsDataControllerTests
         Assert.Contains("Simulated data error", statusResult.Value.ToString());
     }
 
-    private class MockInvestorsDataController : InvestorsDataController
+    private class FileServiceMockedWithData : FileService
     {
         public override List<InvestorDataRow> ReadCSV()
         {
@@ -99,7 +102,7 @@ public class InvestorsDataControllerTests
     [Fact]
     public async Task GetSampleData_ReturnsGroupedData()
     {
-        var controller = new MockInvestorsDataController();
+        var controller = new InvestorsDataController(new FileServiceMockedWithData());
 
         var result = await controller.GetSampleData();
 
@@ -111,7 +114,7 @@ public class InvestorsDataControllerTests
     [Fact]
     public async Task GetDataByInvestor_ReturnsInvestorCommitments()
     {
-        var controller = new MockInvestorsDataController();
+        var controller = new InvestorsDataController(new FileServiceMockedWithData());
 
         var result = await controller.GetDataByInvestor("Ioo Gryffindor fund", "All");
 
@@ -123,7 +126,7 @@ public class InvestorsDataControllerTests
     [Fact]
     public async Task GetDataByInvestor_WithAssetClassFilter_ReturnsFilteredCommitments()
     {
-        var controller = new MockInvestorsDataController();
+        var controller = new InvestorsDataController(new FileServiceMockedWithData());
 
         var result = await controller.GetDataByInvestor("Ioo Gryffindor fund", "Hedge Funds");
 
@@ -135,7 +138,7 @@ public class InvestorsDataControllerTests
     [Fact]
     public async Task GetInvestorSummaries_ReturnsSummary()
     {
-        var controller = new MockInvestorsDataController();
+        var controller = new InvestorsDataController(new FileServiceMockedWithData());
 
         var result = await controller.GetInvestorSummaries("Ioo Gryffindor fund");
 

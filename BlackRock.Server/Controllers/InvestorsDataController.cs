@@ -1,4 +1,5 @@
-﻿using BlackRockTask.Server.Models;
+﻿using BlackRock.Server.Services;
+using BlackRockTask.Server.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BlackRockTask.Server.Controllers
@@ -7,6 +8,12 @@ namespace BlackRockTask.Server.Controllers
     [Route("[controller]")]
     public class InvestorsDataController : ControllerBase
     {
+        private IFileService _fileService;
+
+        public InvestorsDataController(IFileService fileService)
+        {
+            _fileService = fileService;
+        }
 
         [HttpGet]
         [Route("getSampleData")]
@@ -16,7 +23,7 @@ namespace BlackRockTask.Server.Controllers
 
             try
             {
-                var investorsData = ReadCSV();
+                var investorsData = _fileService.ReadCSV();
                 result = investorsData
                     .GroupBy(x => new
                     {
@@ -52,7 +59,7 @@ namespace BlackRockTask.Server.Controllers
         {
             try
             {
-                var investorsData = ReadCSV().Where(x => x.InvestorName == investorId).ToList();
+                var investorsData = _fileService.ReadCSV().Where(x => x.InvestorName == investorId).ToList();
 
                 if (assetClass != "All")
                 {
@@ -76,7 +83,7 @@ namespace BlackRockTask.Server.Controllers
         {
             try
             {
-                var investorsData = ReadCSV().Where(x => x.InvestorName == investorId).ToList();
+                var investorsData = _fileService.ReadCSV().Where(x => x.InvestorName == investorId).ToList();
                 var result = new Dictionary<string, decimal>();
                 
                 result.Add("All", investorsData.Sum(x => x.CommitmentAmount));                
@@ -92,38 +99,6 @@ namespace BlackRockTask.Server.Controllers
             }
         }
 
-        public virtual List<InvestorDataRow> ReadCSV()
-        {
-            var result = new List<InvestorDataRow>();
-            using (var reader = new StreamReader("./SampleData/data.csv"))
-            {
-                // Skip header line
-                reader.ReadLine();
-
-                while (!reader.EndOfStream)
-                {
-                    var line = reader.ReadLine();
-                    var values = line.Split(',');
-
-                    if (values.Length == 8)
-                    {
-                        var investor = new InvestorDataRow
-                        {
-                            InvestorName = values[0].Trim(),
-                            InvestorType = values[1].Trim(),
-                            InvestorCountry = values[2].Trim(),
-                            InvestorDateAdded = DateTime.Parse(values[3].Trim()),
-                            InvestorLastUpdated = DateTime.Parse(values[4].Trim()),
-                            CommitmentAssetClass = values[5].Trim(),
-                            CommitmentAmount = decimal.Parse(values[6].Trim()),
-                            CommitmentCurrency = values[7].Trim()
-                        };
-                        result.Add(investor);
-                    }
-                }
-            }
-
-            return result;
-        }
+        
     }
 }
