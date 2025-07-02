@@ -92,7 +92,7 @@ namespace BlackRockTask.Server.Controllers
             }
         }
 
-        private List<InvestorDataRow> ReadCSV()
+        public virtual List<InvestorDataRow> ReadCSV()
         {
             var result = new List<InvestorDataRow>();
             using (var reader = new StreamReader("./SampleData/data.csv"))
